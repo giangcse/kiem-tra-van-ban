@@ -1,55 +1,79 @@
-import os
 import docx
-from fastapi import FastAPI, File, UploadFile
-from pydantic import BaseModel
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_COLOR_INDEX
-from docx.shared import RGBColor
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import FileResponse
 from typing import List
 
 app = FastAPI()
 
-class FileUploadRequest(BaseModel):
-    files: List[UploadFile] = File(...)
+def compare_files(file1, file2):
+    # Load the first document
+    doc1 = docx.Document(file1)
 
-def compare_docx_files(doc1, doc2):
+    # Load the second document
+    doc2 = docx.Document(file2)
+
+    # Compare the tables in each document
     for table1, table2 in zip(doc1.tables, doc2.tables):
-        if len(table1.rows) != len(table2.rows) or len(table1.columns) != len(table2.columns):
-            print("Tables have different sizes")
-            continue
-        for i, row1 in enumerate(table1.rows):
-            row2 = table2.rows[i]
-            for j, cell1 in enumerate(row1.cells):
-                cell2 = row2.cells[j]
-                if cell1.text != cell2.text:
-                    for paragraph in cell1.paragraphs:
-                        for run in paragraph.runs:
-                            run.font.highlight_color = WD_COLOR_INDEX.YELLOW
-                    for paragraph in cell2.paragraphs:
-                        for run in paragraph.runs:
-                            run.font.highlight_color = WD_COLOR_INDEX.YELLOW
-                    cell1.text = f"{cell1.text} ({cell2.text})"
-                    cell1.paragraphs[0].alignment = WD_TABLE_ALIGNMENT.CENTER
-                    cell1.paragraphs[0].runs[0].font.color.rgb = RGBColor(255, 0, 0)
-    return doc1
+        # Compare the first header in each table
+        if table1.rows[0].cells[0].text != table2.rows[0].cells[0].text:
+            cell1 = table1.rows[0].cells[0]
+            cell2 = table2.rows[0].cells[0]
+            cell1.paragraphs[0].runs[0].font.highlight_color = docx.enum.text.WD_COLOR_INDEX.YELLOW
+            cell2.paragraphs[0].runs[0].font.highlight_color = docx.enum.text.WD_COLOR_INDEX.YELLOW
 
-@app.post("/compare-docx-files/")
-async def compare_docx_files_route(req: FileUploadRequest):
-    file1 = req.files[0]
-    file2 = req.files[1]
-    file1_path = os.path.join(os.getcwd(), file1.filename)
-    file2_path = os.path.join(os.getcwd(), file2.filename)
-    with open(file1_path, "wb") as f1, open(file2_path, "wb") as f2:
-        f1.write(await file1.read())
-        f2.write(await file2.read())
-    doc1 = docx.Document(file1_path)
-    doc2 = docx.Document(file2_path)
-    compare_docx_files(doc1, doc2)
-    result_file_path = os.path.join(os.getcwd(), "result.docx")
-    doc1.save(result_file_path)
-    with open(result_file_path, "rb") as f:
-        result_file_content = f.read()
-    os.remove(file1_path)
-    os.remove(file2_path)
-    os.remove(result_file_path)
-    return {"result": result_file_content}
+        # Compare the second header in each table
+        if table1.rows[1].cells[0].text != table2.rows[1].cells[0].text:
+            cell1 = table1.rows[1].cells[0]
+            cell2 = table2.rows[1].cells[0]
+            cell1.paragraphs[0].runs[0].font.highlight_color = docx.enum.text.WD_COLOR_INDEX.YELLOW
+            cell2.paragraphs[0].runs[0].font.highlight_color = docx.enum.text.WD_COLOR_INDEX.YELLOW
+
+        # Compare the data rows in each table
+        for row1, row2 in zip(table1.rows[2:], table2.rows[2:]):
+            for cell1, cell2 in zip(row1.cells, row2.cells):
+                for para1, para2 in zip(cell1.paragraphs, cell2.paragraphs):
+                    for run1, run2 in zip(para1.runs, para2.runs):
+                        for sent1, sent2 in zip(run1.text.split('. '), run2.text.split('. ')):
+                            if sent1 != sent2:
+                                run1.font.highlight_color = docx.enum.text.WD_COLOR_INDEX.YELLOW
+                                run2.font.highlight_color = docx.enum.text.WD_COLOR_INDEX.YELLOW
+    
+    
+    for i in range(min(len(doc1.paragraphs), len(doc2.paragraphs))):
+        para1 = doc1.paragraphs[i]
+        para2 = doc2.paragraphs[i]
+
+        if para1.text != para2.text:
+            # mark the difference in para1
+            for run in para1.runs:
+                run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+
+            # mark the difference in para2
+            for run in para2.runs:
+                run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+    # Save the modified document
+    output_filename = "output.docx"
+    doc1.save(output_filename)
+
+    return {"filename": output_filename}
+
+@app.post("/compare_files")
+async def compare(doc_files: List[UploadFile]):
+    # Save the files locally
+    filenames = []
+    for doc_file in doc_files:
+        filename = doc_file.filename
+        filenames.append(filename)
+        with open(filename, "wb") as f:
+            f.write(doc_file.file.read())
+
+    # Compare the files
+    compare_files(filenames[0], filenames[1])
+
+    # save the result to a file
+    result_filename = "output.docx"
+    # assuming result_file is the result file object
+    
+    return FileResponse(result_filename, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename=result_filename)
