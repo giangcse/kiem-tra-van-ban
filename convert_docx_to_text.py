@@ -87,4 +87,4 @@ def show_comparison(s1, s2, width=40, margin=10, sidebyside=True, compact=False)
 if __name__=='__main__':
     s1, tables_ = convert("tai_lieu.docx")
     s2, tables = convert("tai_lieu.docx")
-    show_comparison(' '.join(s1), ' '.join(s2), sidebyside=False)
+    show_comparison(' '.join(tables_), ' '.join(tables_), sidebyside=False)
