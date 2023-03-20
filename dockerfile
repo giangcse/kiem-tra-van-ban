@@ -14,10 +14,10 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 COPY . /app
 
 # Expose port 80 to the outside world
-EXPOSE 80
+EXPOSE 10000
 
 # Define environment variable
 ENV NAME World
 
 # Run app.py when the container launches
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
