@@ -1,6 +1,7 @@
-# COPYRIGHT TOOL
-<hr>
-<ul>
-<li>Pull elasticsearch image, elastic kibana and run it.</li>
-<li>Compose all container for each py file</li>
-</ul>
+# CÔNG CỤ TÌM ĐIỂM KHÁC NHAU GIỮA 2 FILE DOCX
+
+## Requirements
+- Cài đặt docker
+## Usage
+- Mở commands line hoặc terminal, gõ lệnh: `docker build -t my-fastapi-app .`
+- Để chạy container, gõ lệnh: `docker run -p 80:80 my-fastapi-app`
