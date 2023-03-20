@@ -36,4 +36,4 @@ def compare_docs(file1_path, file2_path, output_path):
             table2.alignment = WD_TABLE_ALIGNMENT.CENTER
     doc1.save(output_path)
 
-compare_docs('tai_lieu_1.docx', 'tai_lieu_2.docx', 'tai_lieu_so_sanh.docx')
+compare_docs('doc1.docx', 'doc2.docx', 'tai_lieu_so_sanh.docx')

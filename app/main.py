@@ -56,7 +56,7 @@ def compare_files(file1, file2):
         if para1.text != para2.text:
             # mark the difference in para1
             for run in para1.runs:
-                run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+                run.font.highlight_color = WD_COLOR_INDEX.GREEN
 
             # mark the difference in para2
             for run in para2.runs:

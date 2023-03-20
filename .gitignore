@@ -1,2 +1,4 @@
 venv/*
 __pycache__/*
+app/__pycache__/main.cpython-37.pyc
+.vscode/launch.json
