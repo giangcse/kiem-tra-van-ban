@@ -87,15 +87,6 @@ async def compare(doc_files: List[UploadFile]):
     return FileResponse(result_filename, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename=result_filename)
 
 
-app = FastAPI()
-app.add_middleware(
-            CORSMiddleware,
-            allow_origins=['*'],
-            allow_credentials=True,
-            allow_methods=['*'],
-            allow_headers=['*']
-        )
-
 @app.post("/compare")
 async def compare_docx_files_handler(doc1_file: UploadFile = File(...), doc2_file: UploadFile = File(...)):
     # Load the first document
